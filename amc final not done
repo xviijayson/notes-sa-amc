@@ -1,0 +1,177 @@
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { WebView } from 'react-native-webview';
+
+const moods = [
+  { title: 'HAPPY', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5qOzVPo3zjjhaQNtV7bOUaUW3O_b1fgDnTw&s' },
+  { title: 'RELAXING', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjoXxDtPY1fRMQ1y-SJjyZb-b9nOY521SMog&s' },
+  { title: 'DREAMY', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPOVp7XV3mfhqddfbXKNEZMa2O3u_LTVVCXw&s' },
+  { title: 'PUMPED UP', image: 'https://img.freepik.com/free-photo/man-silhouette-angrily-screaming-shadow-back-lit-white-background_140725-161505.jpg?semt=ais_hybrid&w=740' },
+  { title: 'SAD', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3TW6mLqATiReOEaMwwlgJIS5dc_XlpFikkQ&s' },
+  { title: 'SEXY', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRztRLhJO9JT3_kYGCTvCZV0uH1a_AzMWpg8A&s' },
+];
+
+const moodTracks = {
+  HAPPY: [
+    { title: "Happy – Pharrell Williams", embed: "https://open.spotify.com/embed/track/60nZcImufyMA1MKQY3dcCH" },
+    { title: "Good as Hell – Lizzo", embed: "https://open.spotify.com/embed/track/0k664IuFwVP557Gnx7RhIl" },
+    { title: "Can't Stop The Feeling – JT", embed: "https://open.spotify.com/embed/track/6JV2JOEocMgcZxYSZelKcc" },
+    { title: "Walking on Sunshine", embed: "https://open.spotify.com/embed/track/3DQVGC1MFT3FGM3ZLbm1Nf" },
+    { title: "Uptown Funk – Bruno Mars", embed: "https://open.spotify.com/embed/track/32OlwWuMpZ6b0aN2RZOeMS" },
+  ],
+  RELAXING: [
+    { title: "Weightless – Marconi Union", embed: "https://open.spotify.com/embed/track/1d3HGsXmpOA2c7UuHBKpBd" },
+    { title: "Sunset Lover – Petit Biscuit", embed: "https://open.spotify.com/embed/track/7gTvuU5T2C7gFzLr6GZtMf" },
+    { title: "Night Owl – Galimatias", embed: "https://open.spotify.com/embed/track/4zZ7TYCwHVtF8xVvGpKWBx" },
+    { title: "Breezeblocks – Alt-J", embed: "https://open.spotify.com/embed/track/2s1sdSjwQHUTwKjM4lUZsJ" },
+    { title: "Riverside – Agnes Obel", embed: "https://open.spotify.com/embed/track/5DYXeJdDpMbF3GiV4XXyJd" },
+  ],
+  DREAMY: [
+    { title: "I'll Be Missing You", embed: "https://open.spotify.com/embed/track/7H6ev70Weq6DdpZyyTmUXk" },
+    { title: "Cold Little Heart", embed: "https://open.spotify.com/embed/track/3n3Ppam7vgaVa1iaRUc9Lp" },
+    { title: "Where Is My Mind", embed: "https://open.spotify.com/embed/track/2VxeLyX666F8uXCJ0dZF8B" },
+    { title: "Apocalypse - Cigarettes After Sex", embed: "https://open.spotify.com/track/3AVrVz5rK8Hrqo9YGiVGN5?si=b52280773a094581" },
+    { title: "In The Air Tonight", embed: "https://open.spotify.com/embed/track/18AXbzPzBS8Y3AkgSxzJPb" },
+  ],
+  PUMPED_UP: [
+    { title: "Eye of the Tiger – Survivor", embed: "https://open.spotify.com/embed/track/2KH16WveTQWT6KOG9Rg6e2" },
+    { title: "Power – Kanye West", embed: "https://open.spotify.com/embed/track/5nNmj1cLH3r4aA4XDJ2bgY" },
+    { title: "Lose Yourself – Eminem", embed: "https://open.spotify.com/embed/track/1bSpwPhAxZwlR2enJJsv7U" },
+    { title: "Stronger – Kanye West", embed: "https://open.spotify.com/embed/track/2p0zSBtgJwZTbzTn0nZ2xW" },
+    { title: "Till I Collapse – Eminem", embed: "https://open.spotify.com/embed/track/0f8sVY8nloH4Cim5xYQX2n" },
+  ],
+  SAD: [
+    { title: "Someone Like You – Adele", embed: "https://open.spotify.com/embed/track/4kflIGfjdZJW4ot2ioixTB" },
+    { title: "Let Her Go – Passenger", embed: "https://open.spotify.com/embed/track/4Y1fTcf3dYJiRz6C3nYhWW" },
+    { title: "When I Was Your Man – Bruno Mars", embed: "https://open.spotify.com/embed/track/0y60itmpH0aPKsFiGxmtnh" },
+    { title: "Fix You – Coldplay", embed: "https://open.spotify.com/embed/track/6KuQTIu1KoTTkLXKrwlLPV" },
+    { title: "The Night We Met – Lord Huron", embed: "https://open.spotify.com/embed/track/2u8XzYh6VhXdiK8vL7zRbq" },
+  ],
+  SEXY: [
+    { title: "Earned It – The Weeknd", embed: "https://open.spotify.com/track/1cQ3LIkZE68pMSnPhZWXLu?si=9aa00366df0c418a" },
+    { title: "Wicked Games – The Weeknd", embed: "https://open.spotify.com/embed/track/7fBv7CLKzipRk6EC6TWHOB" },
+    { title: "Versace on the Floor – Bruno Mars", embed: "https://open.spotify.com/embed/track/4P0dddbxPil35MNN9G2MEX" },
+    { title: "Pony – Ginuwine", embed: "https://open.spotify.com/embed/track/3qchDNrT5vwej0vzrQbOaM" },
+    { title: "Sexual Healing – Marvin Gaye", embed: "https://open.spotify.com/embed/track/7a5U5ywpL5N2FZ5rIIQ9fB" },
+  ]
+};
+
+export default function App() {
+  const [selectedMood, setSelectedMood] = useState(null);
+
+  const renderTracks = () => {
+    const currentTracks = moodTracks[selectedMood.replace(' ', '_')] || [];
+
+    return (
+      <ScrollView style={styles.trackList}>
+        <Text style={styles.subtitle}>VIBES FOR A {selectedMood} MOOD</Text>
+        {currentTracks.map((track, index) => (
+          <View key={index} style={styles.trackContainer}>
+            <WebView
+              source={{ uri: track.embed }}
+              style={styles.webview}
+              javaScriptEnabled
+            />
+          </View>
+        ))}
+        <TouchableOpacity style={styles.button} onPress={() => setSelectedMood(null)}>
+          <Text style={styles.buttonText}>HOME</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  };
+
+  return (
+    <View style={styles.container}>
+      {!selectedMood ? (
+        <ScrollView>
+          <Text style={styles.header}>GROOVE 🎧 TUNES</Text>
+          <Text style={styles.subtitle}>FEATURED MOODS</Text>
+          <View style={styles.moodGrid}>
+            {moods.map((mood, index) => (
+              <TouchableOpacity key={index} onPress={() => setSelectedMood(mood.title)} style={styles.moodBox}>
+                <Image source={{ uri: mood.image }} style={styles.moodImage} />
+                <Text style={styles.moodLabel}>{mood.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      ) : renderTracks()}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0D0D0D',
+    paddingTop: 50,
+  },
+  header: {
+    fontSize: 32,
+    color: '#FF66CC',
+    textAlign: 'center',
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  moodGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  moodBox: {
+    width: 140,
+    margin: 10,
+    alignItems: 'center',
+    backgroundColor: '#1A1A1A',
+    borderRadius: 10,
+    padding: 5,
+    shadowColor: '#FF66CC',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  moodImage: {
+    width: 120,
+    height: 80,
+    borderRadius: 8,
+  },
+  moodLabel: {
+    color: '#fff',
+    fontWeight: 'bold',
+    marginTop: 5,
+  },
+  trackList: {
+    paddingHorizontal: 10,
+  },
+  trackContainer: {
+    height: 80,
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#1A1A1A',
+    shadowColor: '#FF66CC',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  webview: {
+    height: 80,
+  },
+  button: {
+    backgroundColor: '#FF66CC',
+    padding: 10,
+    borderRadius: 8,
+    margin: 20,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+});
