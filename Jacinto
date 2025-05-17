@@ -1,0 +1,308 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+  TextInput,
+  Linking,
+  Alert,
+} from 'react-native';
+import { WebView } from 'react-native-webview';
+
+const moods = [
+  { title: 'HAPPY', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ5qOzVPo3zjjhaQNtV7bOUaUW3O_b1fgDnTw&s' },
+  { title: 'RELAXING', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQjoXxDtPY1fRMQ1y-SJjyZb-b9nOY521SMog&s' },
+  { title: 'DREAMY', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPOVp7XV3mfhqddfbXKNEZMa2O3u_LTVVCXw&s' },
+  { title: 'PUMPED UP', image: 'https://img.freepik.com/free-photo/man-silhouette-angrily-screaming-shadow-back-lit-white-background_140725-161505.jpg?semt=ais_hybrid&w=740' },
+  { title: 'SAD', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT3TW6mLqATiReOEaMwwlgJIS5dc_XlpFikkQ&s' },
+  { title: 'SEXY', image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRztRLhJO9JT3_kYGCTvCZV0uH1a_AzMWpg8A&s' },
+  { title: 'FOCUSED', image: 'https://www.thoughtco.com/thmb/GaiuduCRVyxn3qWpJ5yWin2LfdU=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-518845884-58d2d9625f9b584683f323ce.jpg' },
+  { title: 'ANGRY', image: 'https://images.squarespace-cdn.com/content/v1/589b12468419c22a6dc74e65/1558341618782-7FJAPQ2YR2NRC5U2VP9J/image-asset.jpeg' },
+  { title: 'IN LOVE', image: 'https://www.hcbh.org/media/giyfs1eb/falling-in-love.png' },
+  { title: 'NOSTALGIC', image: 'https://www.brainsway.com/wp-content/uploads/2023/05/Nostalgic-Depression.jpg' },
+];
+
+const moodTracks = {
+  // ... (same moodTracks object from your original code)
+  HAPPY: [
+    { title: "Happy – Pharrell Williams", embed: "https://open.spotify.com/embed/track/60nZcImufyMA1MKQY3dcCH" },
+    { title: "Good as Hell – Lizzo", embed: "https://open.spotify.com/embed/track/0k664IuFwVP557Gnx7RhIl" },
+    { title: "Can't Stop The Feeling – JT", embed: "https://open.spotify.com/embed/track/6JV2JOEocMgcZxYSZelKcc" },
+    { title: "Walking on Sunshine", embed: "https://open.spotify.com/embed/track/3DQVGC1MFT3FGM3ZLbm1Nf" },
+    { title: "Uptown Funk – Bruno Mars", embed: "https://open.spotify.com/embed/track/32OlwWuMpZ6b0aN2RZOeMS" },
+  ],
+  // Include other mood categories here...
+};
+
+export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isSignup, setIsSignup] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [selectedMood, setSelectedMood] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [chatBotMessage, setChatBotMessage] = useState('');
+
+  const MIN_PASSWORD_LENGTH = 6;
+
+  const handleLoginSignup = () => {
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      Alert.alert('Error', 'Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (!email.includes('@') || !email.includes('.')) {
+      Alert.alert('Error', 'Please enter a valid email address.');
+      return;
+    }
+
+    setIsAuthenticated(true);
+    setEmail('');
+    setPassword('');
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      "Confirm Logout",
+      "Are you sure you want to log out?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Logout",
+          style: "destructive",
+          onPress: () => {
+            setIsAuthenticated(false);
+            setSelectedMood(null);
+            setChatBotMessage('');
+          }
+        }
+      ]
+    );
+  };
+
+  const handleSearch = () => {
+    return moods.filter((mood) =>
+      mood.title.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  };
+
+  const handleMoodSelect = (moodTitle) => {
+    setSelectedMood(moodTitle);
+    setChatBotMessage(`Hey! You're feeling ${moodTitle.toLowerCase()}! Here's some great tunes for that mood! 🎶`);
+  };
+
+  const renderTracks = () => {
+    const currentTracks = moodTracks[selectedMood.replace(' ', '_')] || [];
+    return (
+      <ScrollView style={styles.trackList}>
+        <Text style={styles.subtitle}>VIBES FOR A {selectedMood} MOOD</Text>
+        <Text style={styles.chatbot}>{chatBotMessage}</Text>
+        {currentTracks.map((track, index) => (
+          <View key={index} style={styles.trackContainer}>
+            <WebView source={{ uri: track.embed }} style={styles.webview} javaScriptEnabled />
+          </View>
+        ))}
+        <TouchableOpacity style={styles.button} onPress={() => setSelectedMood(null)}>
+          <Text style={styles.buttonText}>HOME</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <View style={styles.authContainer}>
+        <Text style={styles.header}>GROOVE 🎧 TUNES</Text>
+        <Text style={styles.subtitle}>{isSignup ? 'Sign Up' : 'Login'} to continue</Text>
+
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Email"
+          placeholderTextColor="#999"
+          value={email}
+          onChangeText={setEmail}
+        />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Password"
+          placeholderTextColor="#999"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
+        />
+
+        <TouchableOpacity style={styles.button} onPress={handleLoginSignup}>
+          <Text style={styles.buttonText}>{isSignup ? 'Sign Up' : 'Login'}</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => setIsSignup(!isSignup)}>
+          <Text style={styles.link}>
+            {isSignup ? 'Already have an account? Login' : 'No account? Sign up'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      {!selectedMood ? (
+        <ScrollView>
+          <Text style={styles.header}>GROOVE 🎧 TUNES</Text>
+
+          <View style={styles.socialLinks}>
+            <TouchableOpacity onPress={() => Linking.openURL('https://www.facebook.com/nosyaj.otnicaj.9')}>
+              <Text style={styles.link}>Facebook</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => Linking.openURL('https://www.instagram.com/xviijayson/')}>
+              <Text style={styles.link}>Instagram</Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search mood..."
+            placeholderTextColor="#999"
+            onChangeText={setSearchTerm}
+            value={searchTerm}
+          />
+
+          <Text style={styles.subtitle}>FEATURED MOODS</Text>
+          <View style={styles.moodGrid}>
+            {handleSearch().map((mood, index) => (
+              <TouchableOpacity key={index} onPress={() => handleMoodSelect(mood.title)} style={styles.moodBox}>
+                <Image source={{ uri: mood.image }} style={styles.moodImage} />
+                <Text style={styles.moodLabel}>{mood.title}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </ScrollView>
+      ) : renderTracks()}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#0D0D0D',
+    paddingTop: 50,
+  },
+  authContainer: {
+    flex: 1,
+    backgroundColor: '#0D0D0D',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  header: {
+    fontSize: 32,
+    color: '#FF66CC',
+    textAlign: 'center',
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  socialLinks: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 10,
+    gap: 10,
+  },
+  link: {
+    color: '#00BFFF',
+    marginTop: 10,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
+  },
+  searchInput: {
+    backgroundColor: '#1A1A1A',
+    color: '#fff',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 15,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  moodGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+  },
+  moodBox: {
+    width: 140,
+    margin: 10,
+    alignItems: 'center',
+    backgroundColor: '#1A1A1A',
+    borderRadius: 10,
+    padding: 5,
+    shadowColor: '#FF66CC',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  moodImage: {
+    width: 120,
+    height: 80,
+    borderRadius: 8,
+  },
+  moodLabel: {
+    color: '#fff',
+    fontWeight: 'bold',
+    marginTop: 5,
+  },
+  trackList: {
+    paddingHorizontal: 10,
+  },
+  trackContainer: {
+    height: 80,
+    marginBottom: 20,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: '#1A1A1A',
+    shadowColor: '#FF66CC',
+    shadowOpacity: 0.3,
+    shadowRadius: 10,
+  },
+  webview: {
+    height: 80,
+  },
+  button: {
+    backgroundColor: '#FF66CC',
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 10,
+    alignItems: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  chatbot: {
+    color: '#FF66CC',
+    fontStyle: 'italic',
+    fontSize: 14,
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  logoutButton: {
+    backgroundColor: '#333',
+    padding: 8,
+    borderRadius: 5,
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  logoutText: {
+    color: '#FF66CC',
+    fontWeight: 'bold',
+  },
+});
